@@ -1,0 +1,14 @@
+seo:
+  path: /seo
+  defaults:
+    _controller: Drupal\seo\Controller\SeoController::seoIntro
+  requirements:
+    _permission: 'access content'
+
+seo.seolist:
+  path: /seo/projects
+  defaults:
+    _controller: Drupal\seo\Controller\SeoController::seoList
+    _title: 'My Projects'
+  requirements:
+    _permission: 'access content'

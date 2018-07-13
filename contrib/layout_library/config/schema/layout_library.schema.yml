@@ -1,0 +1,21 @@
+layout_library.layout.*:
+  type: config_entity
+  label: 'Layout'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    targetEntityType:
+      type: string
+      label: 'Entity type'
+    targetBundle:
+      type: string
+      label: 'Bundle'
+    layout:
+      label: 'Layout'
+      type: sequence
+      sequence:
+        type: layout_builder.section

@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Contains first_form.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function first_form_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the first_form module.
+    case 'help.page.first_form':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('My first form module') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/*
+*  Implementing hook_theme();
+*/
+function first_form_theme($existing, $type, $theme, $path){
+
+  //print "Gung wang seo_theme";
+  return [
+    'form_results' => [
+      'variables' => ['items' => array(), 'title' => ''],
+      // 'template' => 'seolist'
+    ],
+
+  ];
+
+}

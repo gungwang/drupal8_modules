@@ -1,0 +1,14 @@
+first_form:
+  path: '/mytest-frstform/first-form'
+  defaults:
+    _form: '\Drupal\first_form\Form\FirstForm'
+    _title: 'My first form page'
+  requirements:
+    _permission: 'access content'
+
+first_form.form_results:
+  path: '/mytest-frstform/first-form/results'
+  defaults:
+    _controller: Drupal\first_form\Controller\FirstFormController::getFormResults
+  requirements:
+    _permission: 'access content'

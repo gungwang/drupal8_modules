@@ -1,0 +1,18 @@
+<?php
+
+/*
+*  Implementing hook_theme();
+*/
+function seo_theme($existing, $type, $theme, $path){
+
+  //print "Gung wang seo_theme";
+  return [
+    'seolist' => [
+      'variables' => ['items' => array(), 'title' => ''],
+      // 'template' => 'seolist'
+    ],
+  ];
+
+}
+
+ ?>

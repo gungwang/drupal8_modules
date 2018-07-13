@@ -1,0 +1,2 @@
+layout_library:
+  deriver: '\Drupal\layout_library\Plugin\Derivative\LayoutLibraryLocalTaskDeriver'
