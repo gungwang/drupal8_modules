@@ -10,7 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @Block(
  *  id = "adage_block",
- *  admin_label = @Translation("As They Say"),
+ *  admin_label = @Translation("My Adage"),
  * )
  */
 class AdageBlock extends BlockBase {
@@ -29,7 +29,7 @@ class AdageBlock extends BlockBase {
   public function blockForm($form, FormStateInterface $form_state) {
     $form['adage'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Adage'),
+      '#title' => $this->t('My Adage'),
       '#default_value' => $this->configuration['adage'],
       '#maxlength' => 128,
       '#size' => 64,
@@ -51,7 +51,7 @@ class AdageBlock extends BlockBase {
    */
   public function build() {
     $build = [];
-    $build['adage_block_adage']['#markup'] = '<p>' . $this->configuration['adage'] . '</p>';
+    $build['adage_block_adage']['#markup'] = '<p>' . $this->configuration['adage'] . 'fsd;lkj fjdso;ifj ;lfjsdijfwef i</p>';
 
     return $build;
   }
