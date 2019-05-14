@@ -1,12 +1,18 @@
 <?php
 
+/**
+ * @file
+ * Contains quick_node_clone.module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 
 /**
  * Implements hook_entity_type_build().
  */
 function quick_node_clone_entity_type_build(array &$entity_types) {
-  if(isset($entity_types['node'])) {
+  if (isset($entity_types['node'])) {
     $entity_types['node']->setFormClass('quick_node_clone', 'Drupal\quick_node_clone\Form\QuickNodeCloneNodeForm');
   }
 
@@ -15,7 +21,7 @@ function quick_node_clone_entity_type_build(array &$entity_types) {
 /**
  * Implements hook_entity_operation().
  */
-function quick_node_clone_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+function quick_node_clone_entity_operation(EntityInterface $entity) {
   $operations = [];
   $bundle = $entity->bundle();
 
@@ -23,7 +29,7 @@ function quick_node_clone_entity_operation(\Drupal\Core\Entity\EntityInterface $
   if ($entity->getEntityTypeId() !== 'node') {
     return $operations;
   }
-  
+
   if (!_quick_node_clone_has_clone_permission($bundle)) {
     return $operations;
   }
@@ -47,7 +53,10 @@ function quick_node_clone_entity_operation(\Drupal\Core\Entity\EntityInterface $
  * @return bool
  *   TRUE or FALSE
  */
-function _quick_node_clone_has_clone_permission(string $bundle) {
+function _quick_node_clone_has_clone_permission($bundle) {
+  if (!is_string($bundle)) {
+    throw new InvalidArgumentException('Argument 1 passed to _quick_node_clone_has_clone_permission() must be of type string, ' . gettype($bundle) . ' given.');
+  }
   $current_user = \Drupal::currentUser();
   if ($current_user->hasPermission("administer nodes")) {
     return TRUE;

@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: test-footer-menu
+label: 'Global Navigation Footer'
+description: 'Footer navigation for websites with the Test Theme'
+locked: false

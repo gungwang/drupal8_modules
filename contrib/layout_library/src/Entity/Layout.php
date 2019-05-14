@@ -21,6 +21,7 @@ use Drupal\Core\Url;
  *       "default" = "Drupal\layout_library\Form\LayoutForm",
  *       "delete" = "Drupal\layout_library\Form\LayoutDeleteForm",
  *       "add" = "Drupal\layout_library\Form\LayoutAddForm",
+ *       "layout_builder" = "Drupal\layout_library\Form\LayoutBuilderForm",
  *     },
  *     "list_builder" = "Drupal\layout_library\Entity\LayoutListBuilder",
  *     "route_provider" = {
@@ -29,6 +30,13 @@ use Drupal\Core\Url;
  *   },
  *   admin_permission = "configure any layout",
  *   config_prefix = "layout",
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "targetEntityType",
+ *     "targetBundle",
+ *     "layout",
+ *   },
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label"

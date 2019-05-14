@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\memcache\Tests\MemcacheLockFunctionalTest.
- */
-
 namespace Drupal\memcache\Tests;
 
 use Drupal\Tests\system\Functional\Lock\LockFunctionalTest;
@@ -24,4 +19,3 @@ class MemcacheLockFunctionalTest extends LockFunctionalTest {
   public static $modules = ['system_test', 'memcache', 'memcache_test'];
 
 }
-

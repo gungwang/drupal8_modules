@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\memcache\DrupalMemcacheInterface.
- */
-
 namespace Drupal\memcache;
 
 /**
@@ -69,6 +64,21 @@ interface DrupalMemcacheInterface {
   public function delete($key);
 
   /**
+   * Add an item to Memcache if it doesn't exist already.
+   *
+   * @param string $key
+   *   The key to add.
+   * @param mixed $value
+   *   The value to add.
+   * @param int $expire
+   *   The expiration time in seconds.
+   *
+   * @return bool
+   *   TRUE on success or FALSE on failure.
+   */
+  public function add($key, $value, $expire = 0);
+
+  /**
    * Prepares the memcache key.
    *
    * @param string $key
@@ -82,7 +92,7 @@ interface DrupalMemcacheInterface {
   /**
    * Immediately invalidates all existing items.
    *
-   * flush doesn't actually free any resources, it only marks all the
+   * Flush doesn't actually free any resources, it only marks all the
    * items as expired, so occupied memory will be overwritten by new items.
    *
    * @return bool
@@ -90,18 +100,4 @@ interface DrupalMemcacheInterface {
    */
   public function flush();
 
-  /**
-   * Closes the memacache instance connection.
-   */
-  public function close();
-
-  /**
-   * Adds a memcache server.
-   *
-   * @param string $server_path
-   *   The server path including port.
-   * @param bool $persistent
-   *   Whether this server connection is persistent or not.
-   */
-  public function addServer($server_path, $persistent = FALSE);
 }

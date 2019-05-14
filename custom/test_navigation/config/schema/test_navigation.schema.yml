@@ -1,0 +1,86 @@
+test_navigation.settings:
+  type: mapping
+  label: 'Test Global Navigation'
+  mapping:
+    test_navigation:
+      type: mapping
+      mapping:
+        agencyname:
+          type: text
+          label: 'Agency name'
+        headerformat:
+          type: text
+          label: 'Global navigation header format'
+        headermenu:
+          type: text
+          label: 'Global navigation header menu'
+        headerauto:
+          type: text
+          label: 'Global navigation header automatic insertion'
+        footerauto:
+          type: text
+          label: 'Global navigation footer automatic insertion'
+        footermenu:
+          type: text
+          label: 'Global navigation footer menu'
+        footerformat:
+          type: text
+          label: 'Global navigation footer format'
+        socialmediablogger:
+          type: text
+          label: 'Blogger URL'
+        socialmediadelicious:
+          type: text
+          label: 'Delicious URL'
+        socialmediafacebook:
+          type: text
+          label: 'Facebook URL'
+        socialmediafeed:
+          type: text
+          label: 'RSS Feed URL'
+        socialmediaflickr:
+          type: text
+          label: 'Flickr URL'
+        socialmediafoursquare:
+          type: text
+          label: 'Foursquare URL'
+        socialmediagithub:
+          type: text
+          label: 'GitHub URL'
+        socialmediagoogle-plus:
+          type: text
+          label: 'Google+ URL'
+        socialmediainstagram:
+          type: text
+          label: 'Instagram URL'
+        socialmedialinkedin:
+          type: text
+          label: 'LinkedIn URL'
+        socialmediamail:
+          type: text
+          label: 'Mail URL'
+        socialmediapinterest:
+          type: text
+          label: 'Pinterest URL'
+        socialmediareddit:
+          type: text
+          label: 'Reddit URL'
+        socialmediashare:
+          type: text
+          label: 'Share URL'
+        socialmediatumblr:
+          type: text
+          label: 'Tumblr URL'
+        socialmediatwitter:
+          type: text
+          label: 'Twitter URL'
+        socialmediavimeo:
+          type: text
+          label: 'Vimeo URL'
+        socialmediayelp:
+          type: text
+          label: 'Yelp URL'
+        socialmediayoutube:
+          type: text
+          label: 'YouTube URL'
+          

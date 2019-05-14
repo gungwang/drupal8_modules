@@ -58,6 +58,9 @@ class AddLayoutTest extends BrowserTestBase {
     $session->pageTextContains('Edit layout for Archaeopteryx');
 
     $this->drupalGet('admin/structure/types/manage/my_little_dinosaur/display');
+    $page->checkField('layout[enabled]');
+    $page->checkField('layout[library]');
+    $page->pressButton('Save');
     $page->checkField('layout[allow_custom]');
     $page->pressButton('Save');
 
@@ -66,6 +69,7 @@ class AddLayoutTest extends BrowserTestBase {
 
     $this->drupalGet('admin/structure/types/manage/my_little_dinosaur/display');
     $page->uncheckField('layout[allow_custom]');
+    $page->uncheckField('layout[library]');
     $page->pressButton('Save');
 
     $this->drupalGet('node/add/my_little_dinosaur');

@@ -20,6 +20,11 @@
   vertical-align: top;
 }
 
+.webform-multiple-table td .description,
+.webform-multiple-table td .form-item--error-message {
+  white-space: normal;
+}
+
 .webform-multiple-table td.webform-multiple-table--handle {
   padding: 0 0 0 1em;
   width: 26px;
@@ -72,6 +77,9 @@
   width: auto;
 }
 
+.webform-multiple-table td .form-type-datetime .form-type-textfield input {
+  width: 12em;
+}
 .webform-multiple-table .webform-multiple-sort-weight {
   width: 4em;
 }
@@ -84,6 +92,13 @@
 
 .webform-multiple-table .container-inline input[type="submit"] {
   width: inherit;
+}
+
+/**
+ * Add margin between stacked form items.
+ */
+.webform-multiple-table .form-item + .form-item {
+  margin-top: .2em;
 }
 
 /**
@@ -104,8 +119,16 @@
 /**
  * Tweak tabledrag toggle weight.
  */
-.webform-multiple-tabledrag-toggle-weight {
+.tabledrag-toggle-weight-wrapper.webform-multiple-tabledrag-toggle-weight {
   float: right;
+  display: inherit;
+  position: inherit;
+}
+
+.tabledrag-toggle-weight-wrapper.webform-multiple-tabledrag-toggle-weight button {
+  position: inherit;
+  top: inherit;
+  right: inherit;
 }
 
 /**

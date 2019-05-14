@@ -2,20 +2,23 @@
 
 namespace Drupal\quick_node_clone;
 
-use Drupal\Core\Routing\UrlGeneratorTrait;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\node\Entity\NodeType;
 
+/**
+ * Module permissions.
+ */
 class QuickNodeClonePermissions {
 
-    use StringTranslationTrait;
+  use StringTranslationTrait;
 
   /**
    * Returns an array of permissions.
    *
    * @return array
    *   The permissions.
-   *   @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+   *
+   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
   public function cloneTypePermissions() {
     $perms = [];
@@ -26,9 +29,10 @@ class QuickNodeClonePermissions {
       $perms += [
         "clone $type_id content" => [
           'title' => $this->t('%type: clone content', $type_params),
-        ]
+        ],
       ];
     }
     return $perms;
   }
+
 }

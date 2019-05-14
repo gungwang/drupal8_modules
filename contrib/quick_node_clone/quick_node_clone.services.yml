@@ -1,7 +1,7 @@
 services:
   quick_node_clone.entity.form_builder:
     class: Drupal\quick_node_clone\Entity\QuickNodeCloneEntityFormBuilder
-    arguments: ['@entity.manager', '@form_builder']
+    arguments: ['@form_builder', '@entity_type.bundle.info', '@config.factory', '@module_handler', '@entity_type.manager']
   quick_node_clone.address_event_subscriber:
     class: Drupal\quick_node_clone\EventSubscriber\AddressEventSubscriber
     tags:

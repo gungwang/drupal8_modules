@@ -2,10 +2,16 @@
 
 namespace Drupal\layout_library\Plugin\SectionStorage;
 
+use Drupal\Component\Plugin\Context\ContextInterface as ComponentContextInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Entity\EntityDisplayBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\EntityContext;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\field_ui\FieldUI;
@@ -13,14 +19,22 @@ use Drupal\layout_builder\Entity\LayoutBuilderSampleEntityGenerator;
 use Drupal\layout_builder\Plugin\SectionStorage\SectionStorageBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
-use Drupal\Core\Plugin\Context\Context;
-use Drupal\Core\Plugin\Context\ContextDefinition;
 
 /**
  * Defines a class for library based layout storage.
  *
+ * This plugin, ultimately, requires the 'layout' context (i.e., a context that
+ * wraps a layout entity). However, that context is normally derived from
+ * another entity, which has a reference to a layout entity in its
+ * layout_selection field.
+ *
  * @SectionStorage(
  *   id = "layout_library",
+ *   context_definitions = {
+ *     "entity" = @ContextDefinition("entity", required = FALSE),
+ *     "layout" = @ContextDefinition("entity:layout", required = FALSE),
+ *     "view_mode" = @ContextDefinition("string", required = FALSE),
+ *   },
  * )
  */
 class Library extends SectionStorageBase implements ContainerFactoryPluginInterface {
@@ -93,6 +107,7 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public function getSectionListFromId($id) {
+    @trigger_error('\Drupal\layout_builder\SectionStorageInterface::getSectionListFromId() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. The section list should be derived from context. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     if ($layout = $this->entityTypeManager->getStorage('layout')->load($id)) {
       return $layout;
     }
@@ -131,7 +146,7 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
       $options['_admin_route'] = FALSE;
       $options['parameters']['layout']['type'] = 'entity:layout';
 
-      $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $path, $defaults, $requirements, $options, $entity_type_id);
+      $this->buildLayoutRoutes($collection, $this->getPluginDefinition(), $path, $defaults, $requirements, $options, $entity_type_id, 'layout');
     }
   }
 
@@ -145,8 +160,8 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
   /**
    * {@inheritdoc}
    */
-  public function getLayoutBuilderUrl() {
-    return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getLayout()->getTargetEntityType()}.view", $this->getRouteParameters());
+  public function getLayoutBuilderUrl($rel = 'view') {
+    return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getLayout()->getTargetEntityType()}.$rel", $this->getRouteParameters());
   }
 
   /**
@@ -154,7 +169,7 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
    */
   protected function getRouteParameters() {
     $layout = $this->getLayout();
-    $route_parameters = FieldUI::getRouteBundleParameter($this->entityTypeManager->getDefinition($layout->getEntityTypeId()), $layout->getTargetBundle());
+    $route_parameters = FieldUI::getRouteBundleParameter($this->entityTypeManager->getDefinition($layout->getTargetEntityType()), $layout->getTargetBundle());
     $route_parameters['layout'] = $this->getLayout()->id();
     return $route_parameters;
   }
@@ -175,24 +190,48 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public function extractIdFromRoute($value, $definition, $name, array $defaults) {
+    @trigger_error('\Drupal\layout_builder\SectionStorageInterface::extractIdFromRoute() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute() should be used instead. See https://www.drupal.org/node/3016262.', E_USER_DEPRECATED);
     return $value ?: $defaults['layout'];
   }
 
   /**
-   * Provides any available contexts for the object using the sections.
-   *
-   * @return \Drupal\Core\Plugin\Context\ContextInterface[]
-   *   The array of context objects.
+   * {@inheritdoc}
    */
-  public function getContexts() {
+  public function getContextsDuringPreview() {
+    $contexts = parent::getContextsDuringPreview();
+
     $display = $this->getLayout();
     $entity = $this->sampleEntityGenerator->get($display->getTargetEntityType(), $display->getTargetBundle());
     $context_label = new TranslatableMarkup('@entity being viewed', ['@entity' => $entity->getEntityType()->getLabel()]);
 
-    // @todo Use EntityContextDefinition after resolving
-    //   https://www.drupal.org/node/2932462.
+    $contexts['layout_builder.entity'] = EntityContext::fromEntity($entity, $context_label);
+    return $contexts;
+  }
+
+  /**
+   * Extracts an entity from the route values.
+   *
+   * @param mixed $value
+   *   The raw value from the route.
+   * @param array $defaults
+   *   The route defaults array.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The entity for the route, or NULL if none exist.
+   */
+  protected function extractEntityFromRoute($value, array $defaults) {
+    return $this->entityTypeManager->getStorage('layout')->load($value ?: $defaults['layout']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deriveContextsFromRoute($value, $definition, $name, array $defaults) {
     $contexts = [];
-    $contexts['layout_builder.entity'] = new Context(new ContextDefinition("entity:{$entity->getEntityTypeId()}", $context_label), $entity);
+
+    if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
+      $contexts['layout'] = EntityContext::fromEntity($entity);
+    }
     return $contexts;
   }
 
@@ -208,6 +247,45 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
    */
   public function save() {
     return $this->getLayout()->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $result = AccessResult::allowed();
+    return $return_as_object ? $result : $result->isAllowed();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
+    // Since the 'layout' context must be marked optional, ensure that it is set
+    // before proceeding.
+    $view_mode = $this->getContextValue('view_mode');
+    return $this->getSectionList() && $view_mode !== EntityDisplayBase::CUSTOM_MODE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setContext($name, ComponentContextInterface $context) {
+    $value = $context->getContextValue();
+    // This cannot be done with constraints because the context handler does not
+    // currently validate optional context definitions.
+    if ($name === 'entity' && $value instanceof FieldableEntityInterface && $value->hasField('layout_selection') && !$value->get('layout_selection')->isEmpty()) {
+      $name = 'layout';
+      $context = EntityContext::fromEntity($value->get('layout_selection')->entity);
+    }
+    parent::setContext($name, $context);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSectionList() {
+    return $this->getContextValue('layout');
   }
 
 }

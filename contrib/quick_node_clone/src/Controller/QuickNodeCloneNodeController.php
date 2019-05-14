@@ -2,10 +2,10 @@
 
 namespace Drupal\quick_node_clone\Controller;
 
+use Drupal\node\Entity\Node;
 use Drupal\quick_node_clone\Entity\QuickNodeCloneEntityFormBuilder;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\node\Entity\Node;
 use Drupal\node\Controller\NodeController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -29,6 +29,8 @@ class QuickNodeCloneNodeController extends NodeController {
    *   The date formatter service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\quick_node_clone\Entity\QuickNodeCloneEntityFormBuilder $entity_form_builder
+   *   The entity form builder.
    */
   public function __construct(DateFormatterInterface $date_formatter, RendererInterface $renderer, QuickNodeCloneEntityFormBuilder $entity_form_builder) {
     parent::__construct($date_formatter, $renderer);
@@ -65,8 +67,8 @@ class QuickNodeCloneNodeController extends NodeController {
    * @return array
    *   A node submission form.
    */
-  public function cloneNode(\Drupal\node\Entity\Node $node) {
-    if(!empty($node)){
+  public function cloneNode(Node $node) {
+    if (!empty($node)) {
       $form = $this->entityFormBuilder()->getForm($node, 'quick_node_clone');
       return $form;
     }
@@ -78,16 +80,16 @@ class QuickNodeCloneNodeController extends NodeController {
   /**
    * The _title_callback for the node.add route.
    *
-   * @param int $node_id
-   *   The current node id.
+   * @param \Drupal\node\Entity\Node $node
+   *   The current node.
    *
    * @return string
    *   The page title.
    */
-  public function clonePageTitle($node) {
+  public function clonePageTitle(Node $node) {
     $prepend_text = "";
     $config = \Drupal::config('quick_node_clone.settings');
-    if(!empty($config->get('text_to_prepend_to_title'))) {
+    if (!empty($config->get('text_to_prepend_to_title'))) {
       $prepend_text = $config->get('text_to_prepend_to_title') . " ";
     }
     return $prepend_text . $node->getTitle();

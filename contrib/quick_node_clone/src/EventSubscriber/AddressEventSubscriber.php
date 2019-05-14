@@ -2,13 +2,17 @@
 
 namespace Drupal\quick_node_clone\EventSubscriber;
 
+use Drupal\address\Event\InitialValuesEvent;
+use Drupal\address\Event\AddressEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Provide an event subscriber to add initial values to address
- * fields when cloning. This method is needed because of the way
- * address handles its fields, otherwise we would be doing this
- * sort of thing inside the form builder when cloning.
+ * Support for cloning address data.
+ *
+ * Provides an event subscriber to add initial values to address fields when
+ * cloning. This method is needed because of the way address handles its fields,
+ * otherwise we would be doing this* sort of thing inside the form builder when
+ * cloning.
  */
 class AddressEventSubscriber implements EventSubscriberInterface {
 
@@ -16,10 +20,13 @@ class AddressEventSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
+
+    $events = [];
+
     if (!class_exists('\Drupal\address\Event\AddressEvents')) {
       return $events;
     }
-    $events[\Drupal\address\Event\AddressEvents::INITIAL_VALUES][] = ['onInitialValues'];
+    $events[AddressEvents::INITIAL_VALUES][] = ['onInitialValues'];
     return $events;
   }
 
@@ -55,7 +62,7 @@ class AddressEventSubscriber implements EventSubscriberInterface {
 
         if (!$node->get($field_name)->isEmpty()) {
 
-          foreach($node->get($field_name) as $key => $value) {
+          foreach ($node->get($field_name) as $key => $value) {
             if ($key == $delta) {
               $address = [
                 'country_code' => $value->getCountryCode(),
@@ -69,7 +76,7 @@ class AddressEventSubscriber implements EventSubscriberInterface {
                 'organization' => $value->getOrganization(),
                 'additional_name' => $value->getAdditionalName(),
                 'given_name' => $value->getGivenName(),
-                'family_name' => $value->getFamilyName()
+                'family_name' => $value->getFamilyName(),
               ];
             }
 
@@ -89,7 +96,7 @@ class AddressEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\address\Event\InitialValuesEvent $event
    *   The initial values event.
    */
-  public function onInitialValues(\Drupal\address\Event\InitialValuesEvent $event) {
+  public function onInitialValues(InitialValuesEvent $event) {
     $event->setInitialValues($this->getInitialValues($event));
   }
 

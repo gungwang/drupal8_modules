@@ -93,7 +93,7 @@ class WebformRequest implements WebformRequestInterface {
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type repository.
+   *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface $entity_type_repository
    *   The entity type repository.
    * @param \Drupal\webform\WebformEntityReferenceManagerInterface $webform_entity_reference_manager
@@ -170,6 +170,24 @@ class WebformRequest implements WebformRequestInterface {
       $webform_submission = $this->entityTypeManager->getStorage('webform_submission')->load($webform_submission);
     }
     return $webform_submission;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCurrentWebformUrl($route_name, array $route_options = []) {
+    $webform_entity = $this->getCurrentWebform();
+    $source_entity = $this->getCurrentSourceEntity();
+    return $this->getUrl($webform_entity, $source_entity, $route_name, $route_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCurrentWebformSubmissionUrl($route_name, array $route_options = []) {
+    $webform_entity = $this->getCurrentWebformSubmission();
+    $source_entity = $this->getCurrentSourceEntity();
+    return $this->getUrl($webform_entity, $source_entity, $route_name, $route_options);
   }
 
   /**

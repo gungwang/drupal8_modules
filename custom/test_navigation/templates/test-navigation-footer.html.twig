@@ -1,0 +1,31 @@
+ {#**
+  #
+  # TWIG FOOTER TEMPLATE FOR THE Test GLOBAL NAVIGATION
+  #
+  #}
+{% if footerauto == 1 %}
+
+{% set footmenucls = [
+        'footer-menu',
+        ]
+%}
+
+<div class="test-footer">
+    <div id="block-sitebranding">
+        <div class="agency-name">
+            <a href="/" title="Home" rel="home">{{ agencyname|raw }}</a>
+        </div>
+    </div>
+    <nav id="block-global-footer-menu" {{ attributes.addClass(footmenucls, footerformat) }}>
+            {{ renderMenu(footermenu, 'footer', footerformat) }}
+    </nav>
+
+    {% if getSocialLinks() is not null %}
+    <nav id="block-global-footer-social-menu" class="social-media">
+        <h2>CONNECT WITH US</h2>
+        <ul>{{ getSocialLinks() }}</ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endif %}

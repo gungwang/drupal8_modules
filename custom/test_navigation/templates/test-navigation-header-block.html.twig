@@ -1,0 +1,28 @@
+{#
+    USED SPECIFICALLY FOR THE GLOBAL NAVIGATION BLOCK IN THE HEADER REGION
+    -- See region--header.twig.html for parent definition template
+#}
+{# {{ dump(agencyname) }} #}
+{# {% if agencyname is null or agencyname is empty %}
+    {% set agencyname = 'Department of Financial Services' %}
+{% endif %}
+  #}
+{% if headerauto == 1 %}
+    {% if unavsetting == '1' %}
+        <nav id="test-header" class="test-header {{ headerformat }} alt-unav" aria-label="primary-site" >
+    {% else %}
+        <nav id="test-header" class="test-header {{ headerformat }}" aria-label="primary-site" >
+    {% endif %}
+        <div class="nav-toggle">
+            <a href="#" role="button" id="test-menu-control">Navigation menu</a>
+        </div>
+    {% if agencylogo is not null and agencylogo is not empty %}
+        <div class="test-logo"><a href="/"><img src="{{ agencylogo }}" alt="{{ agencyname|raw }}" /></a></div>
+    {% else %}
+        <h1><a href="/">{{ agencyname|raw }}</a></h1>
+        
+        {# <h1>    <a href="/">Department of Financial Services</a>    </h1> #}
+    {% endif %}
+    {{ globalNavBlock(headermenu) }}
+    </nav>
+{% endif %}

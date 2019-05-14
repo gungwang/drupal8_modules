@@ -352,7 +352,7 @@ class FieldsHelper implements FieldsHelperInterface {
     }
 
     $property = $this->getInnerProperty($properties[$key]);
-    if (!isset($nestedPath)) {
+    if ($nestedPath === NULL) {
       return $property;
     }
 
@@ -488,6 +488,13 @@ class FieldsHelper implements FieldsHelperInterface {
     }
 
     return $fieldId;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function compareFieldLabels(FieldInterface $a, FieldInterface $b) {
+    return strnatcasecmp($a->getLabel(), $b->getLabel());
   }
 
 }

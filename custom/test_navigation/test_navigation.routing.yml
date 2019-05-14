@@ -1,0 +1,8 @@
+test_navigation.form:
+  path: '/admin/config/testnav'
+  defaults:
+    _form: 'Drupal\test_navigation\Form\testNavigationForm'
+    _title: 'Test Global Navigation Settings'
+  requirements:
+    _permission: 'administer test global nav'
+    

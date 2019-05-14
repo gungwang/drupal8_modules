@@ -3,7 +3,6 @@
 namespace Drupal\webform\Plugin\WebformElement;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\webform\Utility\WebformElementHelper;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
@@ -31,6 +30,7 @@ class Select extends OptionsBase {
       'empty_value' => '',
       'select2' => FALSE,
       'chosen' => FALSE,
+      'placeholder' => '',
     ] + parent::getDefaultProperties();
   }
 
@@ -64,13 +64,36 @@ class Select extends OptionsBase {
       }
     }
 
-    if (!empty($element['#multiple'])) {
-      $element['#element_validate'][] = [get_class($this), 'validateMultipleOptions'];
+    // If select2 or chosen is not available, see if we can use the alternative.
+    if (isset($element['#select2'])
+      && !$this->librariesManager->isIncluded('jquery.select2')
+      && $this->librariesManager->isIncluded('jquery.chosen')) {
+      $element['#chosen'] = TRUE;
+    }
+    elseif (isset($element['#chosen'])
+      && !$this->librariesManager->isIncluded('jquery.chosen')
+      && $this->librariesManager->isIncluded('jquery.select2')) {
+      $element['#select2'] = TRUE;
+    }
+
+    // Enhance select element using select2 or chosen.
+    if (isset($element['#select2']) && $this->librariesManager->isIncluded('jquery.select2')) {
+      $element['#attached']['library'][] = 'webform/webform.element.select2';
+      $element['#attributes']['class'][] = 'js-webform-select2';
+      $element['#attributes']['class'][] = 'webform-select2';
+    }
+    elseif (isset($element['#chosen']) && $this->librariesManager->isIncluded('jquery.chosen')) {
+      $element['#attached']['library'][] = 'webform/webform.element.chosen';
+      $element['#attributes']['class'][] = 'js-webform-chosen';
+      $element['#attributes']['class'][] = 'webform-chosen';
+    }
+
+    // Set placeholder as data attributes for select2 or chosen elements.
+    if (!empty($element['#placeholder'])) {
+      $element['#attributes']['data-placeholder'] = $element['#placeholder'];
     }
 
     parent::prepare($element, $webform_submission);
-
-    WebformElementHelper::enhanceSelect($element);
   }
 
   /**
@@ -78,6 +101,9 @@ class Select extends OptionsBase {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+
+    // Select2 and/or Chosen enhancements.
+    // @see \Drupal\webform\Plugin\WebformElement\WebformCompositeBase::form
     $form['options']['select2'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Select2'),
@@ -102,7 +128,6 @@ class Select extends OptionsBase {
           ':input[name="properties[select2]"]' => ['checked' => TRUE],
         ],
       ],
-
     ];
     if ($this->librariesManager->isExcluded('jquery.chosen')) {
       $form['options']['chosen']['#access'] = FALSE;
@@ -111,10 +136,36 @@ class Select extends OptionsBase {
       $form['options']['select_message'] = [
         '#type' => 'webform_message',
         '#message_type' => 'warning',
-        '#message_message' => $this->t('Select2 and Chosen provide very similar functionality, only one can enabled.'),
+        '#message_message' => $this->t('Select2 and Chosen provide very similar functionality, only one should be enabled.'),
         '#access' => TRUE,
       ];
     }
+
+    // Add states to placeholder if custom library is supported and the
+    // select menu supports multiple values.
+    $placeholder_states = [];
+    if (!$this->librariesManager->isExcluded('jquery.select2')) {
+      $placeholder_states[] = [':input[name="properties[select2]"]' => ['checked' => TRUE]];
+    }
+    if (!$this->librariesManager->isExcluded('jquery.chosen')) {
+      if (isset($form['form']['placeholder']['#states']['visible'])) {
+        $placeholder_states[] = 'or';
+      }
+      $placeholder_states[] = [':input[name="properties[chosen]"]' => ['checked' => TRUE]];
+    }
+    if ($placeholder_states) {
+      $form['form']['placeholder']['#states']['visible'] = [
+        [
+        ':input[name="properties[multiple][container][cardinality]"]' => ['value' => 'number'],
+        ':input[name="properties[multiple][container][cardinality_number]"]' => ['!value' => 1],
+        ],
+        $placeholder_states,
+      ];
+    }
+    else {
+      $form['form']['placeholder']['#access'] = FALSE;
+    }
+
     return $form;
   }
 

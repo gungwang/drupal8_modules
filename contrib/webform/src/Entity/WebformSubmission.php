@@ -11,6 +11,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -25,6 +26,13 @@ use Drupal\webform\WebformSubmissionInterface;
  * @ContentEntityType(
  *   id = "webform_submission",
  *   label = @Translation("Webform submission"),
+ *   label_collection = @Translation("Submissions"),
+ *   label_singular = @Translation("submission"),
+ *   label_plural = @Translation("submissions"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count submission",
+ *     plural = "@count submissions",
+ *   ),
  *   bundle_label = @Translation("Webform"),
  *   handlers = {
  *     "storage" = "Drupal\webform\WebformSubmissionStorage",
@@ -46,6 +54,7 @@ use Drupal\webform\WebformSubmissionInterface;
  *   },
  *   bundle_entity_type = "webform",
  *   list_cache_contexts = { "user" },
+ *   list_cache_tags = { "config:webform_list", "webform_submission_list" },
  *   base_table = "webform_submission",
  *   admin_permission = "administer webform",
  *   entity_keys = {
@@ -56,6 +65,7 @@ use Drupal\webform\WebformSubmissionInterface;
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/webform/manage/{webform}/submission/{webform_submission}",
+ *     "access-denied" = "/admin/structure/webform/manage/{webform}/submission/{webform_submission}/access-denied",
  *     "table" = "/admin/structure/webform/manage/{webform}/submission/{webform_submission}/table",
  *     "text" = "/admin/structure/webform/manage/{webform}/submission/{webform_submission}/text",
  *     "yaml" = "/admin/structure/webform/manage/{webform}/submission/{webform_submission}/yaml",
@@ -185,7 +195,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
 
     // Can't use entity reference without a target type because it defaults to
     // an integer which limits reference to only content entities (and not
-    // config entities like Views, Panels, etc...).
+    // config entities like Views, Panels, etc…).
     // @see \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::propertyDefinitions()
     $fields['entity_id'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Submitted to: Entity ID'))
@@ -223,7 +233,10 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
   public function label() {
     $submission_label = $this->getWebform()->getSetting('submission_label')
       ?: \Drupal::config('webform.settings')->get('settings.default_submission_label');
-    return PlainTextOutput::renderFromHtml(\Drupal::service('webform.token_manager')->replace($submission_label, $this));
+
+    /** @var \Drupal\webform\WebformTokenManagerInterface $token_manager */
+    $token_manager = \Drupal::service('webform.token_manager');
+    return PlainTextOutput::renderFromHtml($token_manager->replaceNoRenderContext($submission_label, $this));
   }
 
   /**
@@ -461,8 +474,10 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
    * {@inheritdoc}
    */
   public function getTokenUrl() {
-    return $this->getSourceUrl()
-      ->setOption('query', ['token' => $this->token->value]);
+    $uri = $this->getSourceUrl();
+    $options = $uri->getOptions();
+    $options['query']['token'] = $this->getToken();
+    return $uri->setOptions($options);
   }
 
   /**
@@ -555,6 +570,18 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
   /**
    * {@inheritdoc}
    */
+  public function isOwner(AccountInterface $account) {
+    if ($account->isAnonymous()) {
+      return !empty($_SESSION['webform_submissions']) && isset($_SESSION['webform_submissions'][$this->id()]);
+    }
+    else {
+      return $account->id() === $this->getOwnerId();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function hasNotes() {
     return $this->notes ? TRUE : FALSE;
   }
@@ -634,7 +661,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
 
     // Get temporary webform entity and store it in the static
     // WebformSubmission::$webform property.
-    // This could be reworked to use \Drupal\user\PrivateTempStoreFactory
+    // This could be reworked to use \Drupal\Core\TempStore\PrivateTempStoreFactory
     // but it might be overkill since we are just using this to validate
     // that a webform's elements can be rendered.
     // @see \Drupal\webform\WebformEntityElementsValidator::validateRendering()
@@ -691,7 +718,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
       'langcode' => \Drupal::languageManager()->getCurrentLanguage()->getId(),
       'token' => Crypt::randomBytesBase64(),
       'uri' => preg_replace('#^' . base_path() . '#', '/', $current_request->getRequestUri()),
-      'remote_addr' => ($webform && $webform->isConfidential()) ? '' : $current_request->getClientIp(),
+      'remote_addr' => ($webform && $webform->hasRemoteAddr()) ? '' : $current_request->getClientIp(),
     ];
 
     $webform->invokeHandlers(__FUNCTION__, $values);
@@ -702,20 +729,31 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
+    // Because the original data is not stored in the persistent entity storage
+    // cache we have to reset it for the original webform submission entity.
+    // @see \Drupal\Core\Entity\EntityStorageBase::doPreSave
+    // @see \Drupal\Core\Entity\ContentEntityStorageBase::getFromPersistentCache
+    if (isset($this->original)) {
+      $this->original->setData($this->originalData);
+      $this->original->setOriginalData($this->originalData);
+    }
+
+    $request_time = \Drupal::time()->getRequestTime();
+
     // Set created.
     if (!$this->created->value) {
-      $this->created->value = REQUEST_TIME;
+      $this->created->value = $request_time;
     }
 
     // Set changed.
-    $this->changed->value = REQUEST_TIME;
+    $this->changed->value = $request_time;
 
     // Set completed.
     if ($this->isDraft()) {
       $this->completed->value = NULL;
     }
     elseif (!$this->isCompleted()) {
-      $this->completed->value = REQUEST_TIME;
+      $this->completed->value = $request_time;
     }
 
     parent::preSave($storage);
@@ -733,7 +771,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
    */
   public function save() {
     // Clear the remote_addr for confidential submissions.
-    if ($this->getWebform()->isConfidential()) {
+    if (!$this->getWebform()->hasRemoteAddr()) {
       $this->get('remote_addr')->value = '';
     }
 

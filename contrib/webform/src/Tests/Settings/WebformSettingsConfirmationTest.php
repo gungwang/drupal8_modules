@@ -18,7 +18,16 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
    *
    * @var array
    */
-  protected static $testWebforms = ['test_confirmation_message', 'test_confirmation_modal', 'test_confirmation_inline', 'test_confirmation_page', 'test_confirmation_page_custom', 'test_confirmation_url', 'test_confirmation_url_message'];
+  protected static $testWebforms = [
+    'test_confirmation_message',
+    'test_confirmation_modal',
+    'test_confirmation_inline',
+    'test_confirmation_page',
+    'test_confirmation_page_custom',
+    'test_confirmation_url',
+    'test_confirmation_url_message',
+    'test_confirmation_none',
+  ];
 
   /**
    * {@inheritdoc}
@@ -70,12 +79,12 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
 
     // Check confirmation inline.
     $this->drupalPostForm('webform/test_confirmation_inline', [], t('Submit'));
-    $this->assertRaw('<a href="' . $webform_confirmation_inline->toUrl('canonical', ['absolute' => TRUE])->toString() . '" rel="back" title="Back to form">Back to form</a>');
+    $this->assertRaw('<a href="' . $webform_confirmation_inline->toUrl('canonical', ['absolute' => TRUE])->toString() . '" rel="prev" title="Back to form">Back to form</a>');
     $this->assertUrl('webform/test_confirmation_inline');
 
     // Check confirmation inline with custom query parameters.
     $this->drupalPostForm('webform/test_confirmation_inline', [], t('Submit'), ['query' => ['custom' => 'param']]);
-    $this->assertRaw('<a href="' . $webform_confirmation_inline->toUrl('canonical', ['absolute' => TRUE, 'query' => ['custom' => 'param']])->toString() . '" rel="back" title="Back to form">Back to form</a>');
+    $this->assertRaw('<a href="' . $webform_confirmation_inline->toUrl('canonical', ['absolute' => TRUE, 'query' => ['custom' => 'param']])->toString() . '" rel="prev" title="Back to form">Back to form</a>');
     $this->assertUrl('webform/test_confirmation_inline', ['query' => ['custom' => 'param']]);
 
     /* Test confirmation page (confirmation_type=page) */
@@ -86,12 +95,12 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
     $sid = $this->postSubmission($webform_confirmation_page);
     $webform_submission = WebformSubmission::load($sid);
     $this->assertRaw('This is a custom confirmation page.');
-    $this->assertRaw('<a href="' . $webform_confirmation_page->toUrl('canonical', ['absolute' => TRUE])->toString() . '" rel="back" title="Back to form">Back to form</a>');
+    $this->assertRaw('<a href="' . $webform_confirmation_page->toUrl('canonical', ['absolute' => TRUE])->toString() . '" rel="prev" title="Back to form">Back to form</a>');
     $this->assertUrl('webform/test_confirmation_page/confirmation', ['query' => ['token' => $webform_submission->getToken()]]);
 
     // Check that the confirmation page's 'Back to form 'link includes custom
     // query parameters.
-    $this->drupalGet('webform/test_confirmation_page/confirmation', ['query' => ['custom' => 'param']]);
+    $this->drupalGet('/webform/test_confirmation_page/confirmation', ['query' => ['custom' => 'param']]);
 
     // Check confirmation page with custom query parameters.
     $sid = $this->postSubmission($webform_confirmation_page, [], NULL, ['query' => ['custom' => 'param']]);
@@ -110,7 +119,7 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
     $this->postSubmission($webform_confirmation_page);
     $this->assertUrl('webform/test_confirmation_page/confirmation');
 
-    // TODO: (TESTING)  Figure out why the inline confirmation link is not including the query string parameters.
+    // TODO: (TESTING) Figure out why the inline confirmation link is not including the query string parameters.
     // $this->assertRaw('<a href="' . $webform_confirmation_page->toUrl()->toString() . '?custom=param">Back to form</a>');.
 
     /* Test confirmation page custom (confirmation_type=page) */
@@ -121,13 +130,13 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
     $this->postSubmission($webform_confirmation_page_custom);
     $this->assertRaw('<h1 class="page-title">Custom confirmation page title</h1>');
     $this->assertRaw('<div style="border: 10px solid red; padding: 1em;" class="webform-confirmation">');
-    $this->assertRaw('<a href="' . $webform_confirmation_page_custom->toUrl()->setAbsolute()->toString() . '" rel="back" title="Custom back to link" class="button">Custom back to link</a>');
+    $this->assertRaw('<a href="' . $webform_confirmation_page_custom->toUrl()->setAbsolute()->toString() . '" rel="prev" title="Custom back to link" class="button">Custom back to link</a>');
 
     // Check back link is hidden.
     $webform_confirmation_page_custom->setSetting('confirmation_back', FALSE);
     $webform_confirmation_page_custom->save();
     $this->postSubmission($webform_confirmation_page_custom);
-    $this->assertNoRaw('<a href="' . $webform_confirmation_page_custom->toUrl()->toString() . '" rel="back" title="Custom back to link" class="button">Custom back to link</a>');
+    $this->assertNoRaw('<a href="' . $webform_confirmation_page_custom->toUrl()->toString() . '" rel="prev" title="Custom back to link" class="button">Custom back to link</a>');
 
     /* Test confirmation URL (confirmation_type=url) */
 
@@ -147,6 +156,16 @@ class WebformSettingsConfirmationTest extends WebformTestBase {
     $this->assertRaw('<h2 class="visually-hidden">Status message</h2>');
     $this->assertRaw('This is a custom confirmation message.');
     $this->assertUrl('<front>');
+
+    /* Test confirmation none (confirmation_type=none) */
+
+    $this->drupalLogout();
+    $webform_confirmation_url_message = Webform::load('test_confirmation_none');
+
+    // Check no confirmation message.
+    $this->postSubmission($webform_confirmation_url_message);
+    $this->assertNoRaw('<h2 class="visually-hidden">Status message</h2>');
+
   }
 
 }

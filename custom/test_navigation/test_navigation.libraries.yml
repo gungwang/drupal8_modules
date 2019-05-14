@@ -1,0 +1,7 @@
+global-nav:
+  version: 1.4
+  js:
+    js/test-nav-header.min.js: {}
+  dependencies:
+    - core/jquery
+    

@@ -1,0 +1,8 @@
+name: 'Test Global Navigation'
+type: module
+description: 'Use this module to add the Test Global Navigation.'
+core: 8.x
+package: Test Navigation
+configure: test_navigation.form
+libraries:
+  - test_navigation/global_nav

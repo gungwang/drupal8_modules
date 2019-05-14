@@ -2,15 +2,16 @@
 
 namespace Drupal\quick_node_clone;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\Core\Url;
-
+/**
+ * Helper class.
+ */
 class QuickNodeCloneNodeFinder {
 
   /**
    * Derive node data from the current path.
    *
-   * @return $entity|NULL
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   Either returns an entity, or null if none found.
    */
   public function findNodeFromCurrentPath() {
     $path = \Drupal::request()->getRequestUri();
@@ -28,21 +29,18 @@ class QuickNodeCloneNodeFinder {
   /**
    * Derive node data from a given path.
    *
-   * @param $path
+   * @param string $path
    *   The drupal path, e.g. /node/2.
-   * @param $options array
-   *   The options passed to the path processor.
    *
-   * @return $entity|NULL
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   Either returns an entity, or null if none found.
    */
-  public function findNodeFromPath($path, $options = NULL) {
+  public function findNodeFromPath($path) {
     $entity = NULL;
 
     $type = 'node';
-    $links = $this->getLinksByType($type);
 
     // Check that the route pattern is an entity template.
-
     $parts = explode('/', $path);
     $i = 0;
     foreach ($parts as $part) {
@@ -51,7 +49,6 @@ class QuickNodeCloneNodeFinder {
       }
       if ($part == $type) {
         break;
-    exit;
       }
     }
     $i++;
@@ -64,7 +61,7 @@ class QuickNodeCloneNodeFinder {
     if (isset($args[$i])) {
       $entity = \Drupal::entityTypeManager()->getStorage($type)->load($args[$i]);
     }
-    if(isset($args[$i - 1]) && $args[$i - 1] != 'node') {
+    if (isset($args[$i - 1]) && $args[$i - 1] != 'node') {
       $entity = \Drupal::entityTypeManager()->getStorage($type)->load($args[$i - 1]);
     }
     return $entity;
@@ -73,10 +70,11 @@ class QuickNodeCloneNodeFinder {
   /**
    * Get entity links, given an entity type.
    *
-   * @param $type
-   *   The drupal path, e.g. 'taxonomy_term'.
+   * @param string $type
+   *   The entity type.
    *
-   * @return $entity_links|NULL
+   * @return array|null
+   *   An array of link templates, or null.
    */
   public function getLinksByType($type) {
     $entity_manager = \Drupal::entityTypeManager();
@@ -88,6 +86,7 @@ class QuickNodeCloneNodeFinder {
    * Determine if the current page path is a valid quick node clone path.
    *
    * @return bool
+   *   TRUE if valid, FALSE if invalid.
    */
   public function currentPathIsValidClonePath() {
     $path = \Drupal::request()->getRequestUri();

@@ -1,0 +1,179 @@
+<?php
+
+/**
+ * @file
+ * Contains test_navigation.module.
+ */
+
+use Drupal\Core\Link;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Url;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements test_navigation_help()
+ */
+function test_navigation_help($route_name, RouteMatchInterface $route_match) {
+
+  switch ($route_name) {
+    case 'help.page.test_navigation':
+      return t('Integrate Test Global Navigation onto your Drupal site.');
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function test_navigation_theme() {
+  $url = Url::fromUri('internal:/');
+  $config = \Drupal::config('test_navigation.settings');
+  $moduleHandler = \Drupal::service('module_handler');
+  if ($moduleHandler->moduleExists('test_unav')) {
+    $unav_config = \Drupal::config('test_unav.settings');
+    $unav_setting = $unav_config->get('test_unav.test_alt_unav_auto');
+  } else {
+    $unav_setting = '0';
+  }
+
+  $header_format  = $config->get('test_navigation.headerformat');
+  $footer_format  = $config->get('test_navigation.footerformat');
+  $header_auto    = $config->get('test_navigation.headerauto');
+  $footer_auto    = $config->get('test_navigation.footerauto');
+  $header_menu    = $config->get('test_navigation.headermenu');
+  $footer_menu    = $config->get('test_navigation.footermenu');
+  $agency_logo    = $config->get('test_navigation.agencylogo');
+
+  // CREATE AGENCY NAME VAR FOR TWIG
+  $tagList = array(); 
+  array_push($tagList, 'br');
+  $agency_name = Xss::filter($config->get('test_navigation.agencyname'),$tagList);
+  $agency_name_footer = Xss::filter($config->get('test_navigation.agencyname'));
+
+  // CREATE AN INDEPENDENT FOOTER WITHOUT A BR TAG FILTERED -- ADDED TO FOOTER TEMPLATE VARS
+  $linked_agency_name = Link::fromTextAndUrl($agency_name, $url)->toString();
+
+  return array(
+      'test_navigation_header_block' => array(
+          'template' => 'test-nav-header-block',
+          'variables' => array(
+              'agencyname'      => $agency_name,
+              'agencylogo'      => $agency_logo,
+              'headerformat'    => $header_format,
+              'headermenu'      => $header_menu,
+              'headerauto'      => $header_auto,
+              'unavsetting'     => $unav_setting,
+          ),
+      ),
+    'test_navigation_header' => array(
+      'template' => 'test-nav-header',
+      'variables' => array(
+        'agencyname' => $agency_name,
+        'agencylogo' => $agency_logo,
+        'headerformat' => $header_format,
+        'headermenu' => $header_menu,
+        'headerauto' => $header_auto,
+        'unavsetting'     => $unav_setting,
+      ),
+    ),
+    'test_navigation_footer' => array(
+      'template' => 'test-nav-footer',
+      'variables' => array(
+        'agencyname' => $agency_name_footer,
+        'footermenu' => $footer_menu,
+        'linkedagencyname' => $linked_agency_name,
+        'footerformat' => $footer_format,
+        'footerauto' => $footer_auto,
+      ),
+    ),
+    'test_navigation_footer_social_media' => array(
+      'template' => 'test-nav-footer-social-media',
+      'variables' => array(
+        'social_media_urls' => array(),
+      ),
+    ),
+    'test_navigation_footer_social_media_urls' => array(
+      'variables' => array(
+        'social_media_urls' => array(),
+      ),
+    ),
+    'test_navigation_footer_social_media_url' => array(
+      'variables' => array(
+        'social_media_url' => array(),
+      ),
+    ),
+    'test_navigation_header_menu' => array(
+      'variables' => array(
+        'menu_name' => NULL,
+        'id' => NULL,
+      ),
+    ),
+    'test_navigation_header_menu_item' => array(
+      'variables' => array(
+        'element' => NULL,
+        'properties' => NULL,
+      ),
+    ),
+    'test_navigation_header_menu_item_link' => array(
+      'variables' => array(
+        'menu_item' => NULL,
+        'link_options' => NULL,
+      ),
+    ),
+    'test_navigation_footer_menu' => array(
+      'variables' => array(
+        'menu_name' => NULL,
+        'id' => NULL,
+      ),
+    ),
+    'test_navigation_footer_menu_column' => array(
+      'variables' => array(
+        'element' => NULL,
+        'properties' => NULL,
+      ),
+    ),
+    'test_navigation_footer_menu_item_link' => array(
+      'variables' => array(
+        'menu_item' => NULL,
+        'link_options' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Function test_navigation_preprocess.
+ */
+function test_navigation_preprocess(&$variables) {
+  $variables['#attached']['library'][] = 'test_navigation/global-nav';
+}
+
+/**
+ * Implemtnet hook_page_bottom().
+ *
+ * Add uNav footer to the page_bottom region
+ * automatically if Drupal variable footerauto is TRUE.
+ * But don't add global nav if on an administrative page.
+ */
+function test_navigation_page_bottom(&$page_bottom) {
+  // Skip menu if not Auto or on administrative page.
+  $config = \Drupal::config('test_navigation.settings');
+  $auto = $config->get('test_navigation.footerauto');
+  $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+  if ($auto == '0' || $is_admin) {
+    return;
+  }
+
+  $page_bottom['page_bottom']['test_navigation'] = array(
+    '#weight' => 950,
+    '#theme' => 'test_navigation_footer',
+  );
+}
+
+/**
+ * Implement hook_form_FORMID_alter().
+ *
+ * Add description/help text change for Link field in menu items
+ */
+function test_navigation_form_menu_link_content_menu_link_content_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $form['link']['widget'][0]['uri']['#description'] = t('Start typing the title of a piece of content to select it. You can also enter an internal path such as %add-node or an external URL such as %url. Enter %front to link to the front page. Enter %nolink to leave this menu item unlinked.', array('%front' => '<front>', '%add-node' => '/node/add', '%url' => 'http://example.com', '%nolink' => 'route:<nolink>'));;
+}

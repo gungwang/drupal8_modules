@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Needed so module appears on uninstall pg D.O/node/2225029#comment-10108294.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function test_navigation_uninstall() {
+  // Clear the bootstrap cache.
+  \Drupal::cache('bootstrap')->deleteAll();
+}

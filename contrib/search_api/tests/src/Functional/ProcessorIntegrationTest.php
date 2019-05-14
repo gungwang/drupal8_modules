@@ -30,6 +30,7 @@ class ProcessorIntegrationTest extends SearchApiBrowserTestBase {
   public static $modules = [
     'filter',
     'taxonomy',
+    'search_api_test_no_ui',
   ];
 
   /**
@@ -155,6 +156,13 @@ class ProcessorIntegrationTest extends SearchApiBrowserTestBase {
 
     $this->checkEntityStatusIntegration();
     $enabled[] = 'entity_status';
+    sort($enabled);
+    $actual_processors = array_keys($this->loadIndex()->getProcessors());
+    sort($actual_processors);
+    $this->assertEquals($enabled, $actual_processors);
+
+    $this->checkNoUiIntegration();
+    $enabled[] = 'search_api_test_no_ui';
     sort($enabled);
     $actual_processors = array_keys($this->loadIndex()->getProcessors());
     sort($actual_processors);
@@ -443,6 +451,7 @@ TAGS
     $this->checkValidationError($configuration, 'html_filter', $errors);
 
     $configuration = $form_values = [
+      'all_fields' => TRUE,
       'title' => FALSE,
       'alt' => FALSE,
       'tags' => [
@@ -457,7 +466,9 @@ TAGS
    * Tests the UI for the "Ignore case" processor.
    */
   public function checkIgnoreCaseIntegration() {
-    $this->editSettingsForm([], 'ignorecase');
+    $this->editSettingsForm([
+      'all_fields' => TRUE,
+    ], 'ignorecase');
   }
 
   /**
@@ -470,32 +481,33 @@ TAGS
     $this->checkValidationError($configuration, 'ignore_character', 'The entered text is no valid regular expression.');
 
     $configuration = $form_values = [
+      'all_fields' => TRUE,
       'ignorable' => '[¿¡!?,.]',
-      'strip' => [
-        'character_sets' => [
-          'Pc' => 'Pc',
-          'Pd' => 'Pd',
-          'Pe' => 'Pe',
-          'Pf' => 'Pf',
-          'Pi' => 'Pi',
-          'Po' => 'Po',
-          'Ps' => 'Ps',
-          'Cc' => 'Cc',
-          'Cf' => FALSE,
-          'Co' => FALSE,
-          'Mc' => FALSE,
-          'Me' => FALSE,
-          'Mn' => FALSE,
-          'Sc' => FALSE,
-          'Sk' => FALSE,
-          'Sm' => FALSE,
-          'So' => FALSE,
-          'Zl' => FALSE,
-          'Zp' => FALSE,
-          'Zs' => FALSE,
-        ],
-      ],
     ];
+    $form_values['strip']['character_sets'] = [
+      'Pc' => 'Pc',
+      'Pd' => 'Pd',
+      'Pe' => 'Pe',
+      'Pf' => 'Pf',
+      'Pi' => 'Pi',
+      'Po' => 'Po',
+      'Ps' => 'Ps',
+      'Cc' => 'Cc',
+      'Cf' => FALSE,
+      'Co' => FALSE,
+      'Mc' => FALSE,
+      'Me' => FALSE,
+      'Mn' => FALSE,
+      'Sc' => FALSE,
+      'Sk' => FALSE,
+      'Sm' => FALSE,
+      'So' => FALSE,
+      'Zl' => FALSE,
+      'Zp' => FALSE,
+      'Zs' => FALSE,
+    ];
+    $configuration['ignorable_classes'] = array_filter($form_values['strip']['character_sets']);
+    sort($configuration['ignorable_classes']);
     $this->editSettingsForm($configuration, 'ignore_character', $form_values);
   }
 
@@ -504,6 +516,21 @@ TAGS
    */
   public function checkEntityStatusIntegration() {
     $this->enableProcessor('entity_status');
+  }
+
+  /**
+   * Tests the "No UI" test processor.
+   */
+  public function checkNoUiIntegration() {
+    $this->loadProcessorsTab();
+    $this->assertSession()->pageTextNotContains('No UI processor');
+
+    // Ensure that the processor can still be enabled programmatically – and
+    // stays enabled when submitting the processors form.
+    $index = $this->loadIndex();
+    $processor = \Drupal::getContainer()->get('search_api.plugin_helper')
+      ->createProcessorPlugin($index, 'search_api_test_no_ui');
+    $index->addProcessor($processor)->save();
   }
 
   /**
@@ -556,9 +583,11 @@ TAGS
    */
   public function checkStopWordsIntegration() {
     $configuration = [
+      'all_fields' => TRUE,
       'stopwords' => ['the'],
     ];
     $form_values = [
+      'all_fields' => TRUE,
       'stopwords' => 'the',
     ];
     $this->editSettingsForm($configuration, 'stopwords', $form_values);
@@ -574,6 +603,7 @@ TAGS
     $this->checkValidationError($configuration, 'tokenizer', 'The entered text is no valid PCRE character class.');
 
     $configuration = [
+      'all_fields' => TRUE,
       'spaces' => '',
       'overlap_cjk' => FALSE,
       'minimum_word_size' => 2,
@@ -585,7 +615,9 @@ TAGS
    * Tests the UI for the "Transliteration" processor.
    */
   public function checkTransliterationIntegration() {
-    $this->editSettingsForm([], 'transliteration');
+    $this->editSettingsForm([
+      'all_fields' => TRUE,
+    ], 'transliteration');
   }
 
   /**
@@ -613,9 +645,11 @@ TAGS
   public function checkStemmerIntegration() {
     $this->enableProcessor('stemmer');
     $configuration = [
+      'all_fields' => TRUE,
       'exceptions' => ['indian' => 'india'],
     ];
     $form_values = [
+      'all_fields' => TRUE,
       'exceptions' => 'indian=india',
     ];
     $this->editSettingsForm($configuration, 'stemmer', $form_values);

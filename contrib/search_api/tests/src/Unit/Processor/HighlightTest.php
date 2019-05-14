@@ -469,6 +469,60 @@ class HighlightTest extends UnitTestCase {
   }
 
   /**
+   * Tests whether excerpt creation correctly handles HTML tags.
+   */
+  public function testPostprocessSearchResultsExcerptStripTags() {
+    $query = $this->createMock(QueryInterface::class);
+    $query->expects($this->once())
+      ->method('getProcessingLevel')
+      ->willReturn(QueryInterface::PROCESSING_FULL);
+    $query->expects($this->atLeastOnce())
+      ->method('getOriginalKeys')
+      ->will($this->returnValue(['#conjunction' => 'AND', 'foo']));
+    /** @var \Drupal\search_api\Query\QueryInterface $query */
+
+    $field = $this->createTestField('body', 'entity:node/body');
+
+    $this->index->expects($this->atLeastOnce())
+      ->method('getFields')
+      ->will($this->returnValue(['body' => $field]));
+
+    $this->processor->setIndex($this->index);
+
+    $body_value = <<<'END'
+Sentence with foo keyword.
+<script>
+var foo = 1;
+</script>
+<style>
+a.foo {
+  font-weight: bold;
+}
+</style>
+And another foo!
+END;
+    $fields = [
+      'entity:node/body' => [
+        'type' => 'text',
+        'values' => [$body_value],
+      ],
+    ];
+
+    $items = $this->createItems($this->index, 1, $fields);
+
+    $results = new ResultSet($query);
+    $results->setResultItems($items);
+    $results->setResultCount(1);
+
+    $this->processor->postprocessSearchResults($results);
+
+    $output = $results->getResultItems();
+    $excerpt = $output[$this->itemIds[0]]->getExcerpt();
+    $correct_output = '… Sentence with <strong>foo</strong> keyword. And another <strong>foo</strong>! …';
+    $this->assertEquals($correct_output, $excerpt, 'Excerpt was added.');
+  }
+
+  /**
    * Tests whether highlighting works on a longer text matching near the end.
    */
   public function testPostprocessSearchResultsExerptMatchNearEnd() {
@@ -598,6 +652,50 @@ class HighlightTest extends UnitTestCase {
     $excerpt = $items[$this->itemIds[0]]->getExcerpt();
 
     $this->assertEmpty($excerpt, 'No excerpt added when disabled.');
+  }
+
+  /**
+   * Tests whether excerpt creation uses the "highlighted_keys" extra data.
+   */
+  public function testPostprocessSearchResultsExcerptWithKeysFromBackend() {
+    $query = $this->createMock(QueryInterface::class);
+    $query->expects($this->once())
+      ->method('getProcessingLevel')
+      ->willReturn(QueryInterface::PROCESSING_FULL);
+    $query->expects($this->atLeastOnce())
+      ->method('getOriginalKeys')
+      ->will($this->returnValue(['#conjunction' => 'AND', 'congues']));
+    /** @var \Drupal\search_api\Query\QueryInterface $query */
+
+    $field = $this->createTestField('body', 'entity:node/body');
+
+    $this->index->expects($this->atLeastOnce())
+      ->method('getFields')
+      ->will($this->returnValue(['body' => $field]));
+
+    $this->processor->setIndex($this->index);
+
+    $body_values = [$this->getFieldBody()];
+    $fields = [
+      'entity:node/body' => [
+        'type' => 'text',
+        'values' => $body_values,
+      ],
+    ];
+
+    $items = $this->createItems($this->index, 1, $fields);
+    $items[$this->itemIds[0]]->setExtraData('highlighted_keys', ['congue']);
+
+    $results = new ResultSet($query);
+    $results->setResultItems($items);
+    $results->setResultCount(1);
+
+    $this->processor->postprocessSearchResults($results);
+
+    $output = $results->getResultItems();
+    $excerpt = $output[$this->itemIds[0]]->getExcerpt();
+    $correct_output = '… tristique, ligula sit amet condimentum dapibus, lorem nunc <strong>congue</strong> velit, et dictum augue leo sodales augue. Maecenas …';
+    $this->assertEquals($correct_output, $excerpt, 'Excerpt was added.');
   }
 
   /**
@@ -959,6 +1057,52 @@ class HighlightTest extends UnitTestCase {
     ];
     $fields = $item->getExtraData('highlighted_fields');
     $this->assertEquals($expected, $fields);
+  }
+
+  /**
+   * Provides a regression test for bug #3022724.
+   *
+   * Before the bug was fixed, certain combinations of text field values and
+   * keywords could lead to an infinite loop, or at least to the excerpt only
+   * containing the first snippet.
+   *
+   * @param string $text
+   *   The input text.
+   * @param string[] $keys
+   *   The keys that should be highlighted.
+   * @param string $expected
+   *   The expected result containing the highlighted strings.
+   *
+   * @see https://www.drupal.org/node/3022724
+   *
+   * @dataProvider regressionBug3022724DataProvider
+   */
+  public function testRegressionBug3022724($text, array $keys, $expected) {
+    $method = new \ReflectionMethod($this->processor, 'createExcerpt');
+    $method->setAccessible(TRUE);
+    $excerpt = $method->invoke($this->processor, $text, $keys);
+    $this->assertEquals($expected, $excerpt);
+  }
+
+  /**
+   * Provides test data for testRegressionBug3022724().
+   *
+   * @return array
+   *   An array of argument arrays for testRegressionBug3022724().
+   */
+  public function regressionBug3022724DataProvider() {
+    return [
+      'multiple snippets' => [
+        'text' => 'field value 1 … field value 2 … field value with first foo match … then long text of no matches, interspersed with some Hungarian: Jó napot kívánok! Hogy vagy? … then a field value with a second foo match – will it get highlighted?',
+        'keys' => ['foo'],
+        'expected' => '… field value 1 … field value 2 … field value with first <strong>foo</strong> match … then long text of no matches, interspersed with … kívánok! Hogy vagy? … then a field value with a second <strong>foo</strong> match – will it get highlighted? …',
+      ],
+      'overlong word in prefix' => [
+        'text' => 'field value 1 … field value 2 … this is someVeryLongTextWhichHasNoSpacesInItWhichCanLeadToProblemsGettingAContextForHighlightingThis.Foo.Match',
+        'keys' => ['foo'],
+        'expected' => '… nItWhichCanLeadToProblemsGettingAContextForHighlightingThis.<strong>Foo</strong>.Match …',
+      ],
+    ];
   }
 
   /**

@@ -1,3 +1,11 @@
+core.entity_view_display.*.*.*.third_party.layout_library:
+  type: mapping
+  label: 'Per-view-mode Layout Library settings'
+  mapping:
+    enable:
+      type: boolean
+      label: 'Whether the Layout Library is enabled for this display'
+
 layout_library.layout.*:
   type: config_entity
   label: 'Layout'

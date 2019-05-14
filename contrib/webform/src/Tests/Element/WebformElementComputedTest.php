@@ -68,7 +68,7 @@ class WebformElementComputedTest extends WebformElementTestBase {
     $this->assertRaw('<b class="webform_computed_token_html">xss:</b> &lt;script&gt;alert(&quot;XSS&quot;);&lt;/script&gt;<br />');
 
     // Check token plain text rendering.
-    $this->assertRaw('<div id="test_element_computed_token--webform_computed_token_text" class="webform-element webform-element-type-webform-computed-token js-form-item form-item js-form-type-item form-type-item js-form-item-webform-computed-token-text form-item-webform-computed-token-text">');
+    $this->assertRaw('<div class="webform-element webform-element-type-webform-computed-token js-form-item form-item js-form-type-item form-type-item js-form-item-webform-computed-token-text form-item-webform-computed-token-text" id="test_element_computed_token--webform_computed_token_text">');
     $this->assertRaw('<label>webform_computed_token_text</label>');
     $this->assertRaw('simple string: This is a string<br />');
     $this->assertRaw('complex string : This is a &lt;strong&gt;complex&lt;/strong&gt; string, which contains &quot;double&quot; and &#039;single&#039; quotes with special characters like &gt;, &lt;, &gt;&lt;, and &lt;&gt;.<br />');
@@ -80,7 +80,8 @@ class WebformElementComputedTest extends WebformElementTestBase {
     $data = $webform_submission->getData();
 
     // Check value stored in the database.
-    $this->assertEqual($data['webform_computed_token_store'], 'This is a string');
+    $this->debug($data['webform_computed_token_store']);
+    $this->assertEqual($data['webform_computed_token_store'], "sid: $sid");
 
     // Check values not stored in the database.
     $this->assert(!isset($data['webform_computed_token_auto']));
@@ -88,6 +89,15 @@ class WebformElementComputedTest extends WebformElementTestBase {
     $this->assert(!isset($data['webform_computed_token_text']));
 
     /* Twig */
+
+    // Get computed Twig form.
+    $this->drupalGet('/webform/test_element_computed_twig');
+
+    // Check Twig trim.
+    $this->assertFieldByName('webform_computed_twig_trim', '<em>This is trimmed</em>  <br/>');
+
+    // Check Twig spaceless.
+    $this->assertFieldByName('webform_computed_twig_spaceless', '<em>This is spaceless</em><br/>');
 
     // Get computed Twig preview.
     $this->drupalPostForm('webform/test_element_computed_twig', [], t('Preview'));
@@ -122,7 +132,7 @@ class WebformElementComputedTest extends WebformElementTestBase {
     /* Ajax */
 
     // Get computed ajax form.
-    $this->drupalGet('webform/test_element_computed_ajax');
+    $this->drupalGet('/webform/test_element_computed_ajax');
 
     // Check that a and b are hidden via #hide_empty.
     $this->assertRaw('<div style="display:none" class="js-form-item form-item js-form-type-item form-type-item js-form-item-webform-computed-token-a form-item-webform-computed-token-a">');
@@ -135,7 +145,7 @@ class WebformElementComputedTest extends WebformElementTestBase {
     $this->assertFieldByName('webform_computed_twig_token', 'Please enter a value for a and b.');
 
     // Calculate 2 + 4 = 6.
-    $edit = ['a' => 2, 'b' => 4];
+    $edit = ['a[select]' => 2, 'b' => 4];
 
     // Check a is updated.
     $this->drupalPostAjaxForm(NULL, $edit, 'webform-computed-webform_computed_token_a-button');

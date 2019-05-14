@@ -2,11 +2,12 @@ name: Layout library
 description: Provides a library of layouts for content-editors to select from
 # core: 8.x
 type: module
+configure: entity.layout.collection
 dependencies:
-  - layout_builder
+  - drupal:layout_builder
 
-# Information added by Drupal.org packaging script on 2018-05-25
-version: '8.x-1.x-dev'
+# Information added by Drupal.org packaging script on 2019-03-14
+version: '8.x-1.0-alpha2'
 core: '8.x'
 project: 'layout_library'
-datestamp: 1527259089
+datestamp: 1552574292

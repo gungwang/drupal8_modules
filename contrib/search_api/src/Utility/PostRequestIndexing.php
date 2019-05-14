@@ -2,7 +2,6 @@
 
 namespace Drupal\search_api\Utility;
 
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\DestructableInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\search_api\LoggerTrait;
@@ -50,7 +49,10 @@ class PostRequestIndexing implements PostRequestIndexingInterface, DestructableI
       try {
         $storage = $this->entityTypeManager->getStorage('search_api_index');
       }
-      catch (InvalidPluginDefinitionException $e) {
+      // @todo @todo Replace with multi-catch for
+      //   InvalidPluginDefinitionException and PluginNotFoundException once we
+      //   depend on PHP 7.1+.
+      catch (\Exception $e) {
         // It might be possible that the module got uninstalled during the rest
         // of the page request, or something else happened. To be on the safe
         // side, catch the exception in case the entity type isn't found.
@@ -66,9 +68,21 @@ class PostRequestIndexing implements PostRequestIndexingInterface, DestructableI
       }
 
       try {
-        $items = $index->loadItemsMultiple($item_ids);
-        if ($items) {
-          $index->indexSpecificItems($items);
+        // In case there are lots of items to index, take care to not load/index
+        // all of them at once, so we don't run out of memory. Using the index's
+        // cron batch size should always be safe.
+        $batch_size = $index->getOption('cron_limit', 50) ?: 50;
+        if ($batch_size > 0) {
+          $item_ids_batches = array_chunk($item_ids, $batch_size);
+        }
+        else {
+          $item_ids_batches = [$item_ids];
+        }
+        foreach ($item_ids_batches as $item_ids_batch) {
+          $items = $index->loadItemsMultiple($item_ids_batch);
+          if ($items) {
+            $index->indexSpecificItems($items);
+          }
         }
       }
       catch (SearchApiException $e) {

@@ -1,0 +1,13 @@
+services:
+  test_navigation.twig.test_navigation_footer_extension:
+    class: Drupal\test_navigation\Twig\testNavigationFooterExtension
+    tags:
+      - { name: twig.extension }
+  test_navigation.twig.test_social_extension:
+    class: Drupal\test_navigation\Twig\testSocialExtension
+    tags:
+      - { name: twig.extension }
+  test_navigation.twig.test_navigation_block_extension:
+      class: Drupal\test_navigation\Twig\testNavigationBlockExtension
+      tags:
+        - { name: twig.extension }
