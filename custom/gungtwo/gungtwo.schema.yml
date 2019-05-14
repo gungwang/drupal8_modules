@@ -1,0 +1,8 @@
+gungtwo.company:
+  type: config_object
+  lable: 'Drupal Form Setting, Company'
+  mapping:
+    company_name:
+      type: string
+      lable: 'A Company Name'
+      

@@ -1,0 +1,6 @@
+name: Gung Two Form
+type: module
+core: 8.x
+package: Gung Demo
+description: This is 2nd demo module with Form by Gung
+

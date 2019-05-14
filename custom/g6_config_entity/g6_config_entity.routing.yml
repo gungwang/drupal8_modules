@@ -1,0 +1,15 @@
+entity.announcement.add_form:
+  path: '/admin/config/system/site-announcements/add'
+  defaults:
+    _entity_form: 'announcement.add'
+    _title: 'Add Announcement'
+  requirements:
+    _permission: 'administer content'
+
+entity.announcement.colletion:
+  path: '/admin/config/system/site-announcements'
+  defaults:
+    _entity_list: 'announcement'
+    _title: 'Site Announcements'
+  requirements:
+    _permission: 'administer content'

@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Implement hook_field_info)_alter().
+ */
+function g5field_field_info_alter(&$info) {
+  $info['email']['label'] = t('E-mail address');
+}

@@ -1,0 +1,4 @@
+view gungone pages:
+  title: 'View Gung One module pages'
+  description: 'Allow users to view pages provided by Gung One module'
+  restrict access: TRUE

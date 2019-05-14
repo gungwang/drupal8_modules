@@ -1,0 +1,5 @@
+name: Gung Geo Location IP
+type: module
+core: 8.x
+description:  Show the Country code according to the IP address
+package: Gung Demo

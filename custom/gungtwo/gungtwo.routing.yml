@@ -1,0 +1,15 @@
+gungtwo.form:
+  path: '/demo/example-form'
+  defaults:
+    _title: 'Example Form'
+    _form: '\Drupal\gungtwo\Form\ExampleForm'
+  requirements:
+    _access: 'TRUE'
+gungtwo.form2:
+  path: 'demo/e2form'
+  defaults:
+    _title: 'Example 2 Form'
+    _form: '\Drupal\gungtwo\Form\E2Form'
+  requirements:
+    _access: 'TRUE'
+    
