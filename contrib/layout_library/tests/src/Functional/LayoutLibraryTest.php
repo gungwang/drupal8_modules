@@ -62,16 +62,18 @@ class LayoutLibraryTest extends BrowserTestBase {
     $assert_session->pageTextContains('Edit layout for Slim Pug');
 
     // Customize the library layout so we can tell it from the others.
-    $page->clickLink('Add Block');
+    $page->clickLink('Add section');
+    $page->clickLink('One column');
+    $page->clickLink('Add block');
     $page->clickLink('Powered by Drupal');
     $page->fillField('settings[label]', 'This is from the library');
     $page->checkField('settings[label_display]');
-    $page->pressButton('Add Block');
+    $page->pressButton('Add block');
     // Add a field block to the layout to ensure that they can be rendered in
     // library layouts without causing infinite recursion.
-    $page->clickLink('Add Block');
+    $page->clickLink('Add block');
     $page->clickLink('Authored by');
-    $page->pressButton('Add Block');
+    $page->pressButton('Add block');
     $this->assertSession()->statusCodeEquals(200);
     $page->pressButton('Save layout');
 
@@ -85,13 +87,13 @@ class LayoutLibraryTest extends BrowserTestBase {
 
     // Customize the default layout so we can tell it from the others.
     $page->clickLink('Manage layout');
-    $page->clickLink('Add Section');
+    $page->clickLink('Add section');
     $page->clickLink('One column');
-    $page->clickLink('Add Block');
+    $page->clickLink('Add block');
     $page->clickLink('Powered by Drupal');
     $page->fillField('settings[label]', 'This is from defaults');
     $page->checkField('settings[label_display]');
-    $page->pressButton('Add Block');
+    $page->pressButton('Add block');
     $page->pressButton('Save layout');
 
     $this->drupalGet($node->toUrl());
@@ -111,13 +113,13 @@ class LayoutLibraryTest extends BrowserTestBase {
     $page->clickLink('Layout');
     $page->clickLink('Remove section');
     $page->pressButton('Remove');
-    $page->clickLink('Add Section');
+    $page->clickLink('Add section');
     $page->clickLink('One column');
-    $page->clickLink('Add Block');
+    $page->clickLink('Add block');
     $page->clickLink('Powered by Drupal');
     $page->fillField('settings[label]', 'This is from overrides');
     $page->checkField('settings[label_display]');
-    $page->pressButton('Add Block');
+    $page->pressButton('Add block');
     $page->pressButton('Save layout');
     $assert_session->pageTextNotContains('This is from defaults');
     $assert_session->pageTextNotContains('This is from the library');

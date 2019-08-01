@@ -263,8 +263,22 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
   public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
     // Since the 'layout' context must be marked optional, ensure that it is set
     // before proceeding.
-    $view_mode = $this->getContextValue('view_mode');
-    return $this->getSectionList() && $view_mode !== EntityDisplayBase::CUSTOM_MODE;
+    $is_library_enabled = FALSE;
+    $values = $this->getContextValues();
+
+    if(!is_null($values['layout'])) {
+      $entity = $values['layout']->getTargetEntityType();
+      $bundle = $values['layout']->getTargetBundle();
+      $view_mode = $values['view_mode'];
+      $entity_view_display = $this->entityTypeManager
+        ->getStorage('entity_view_display')
+        ->load($entity . '.' . $bundle . '.' . $view_mode);
+
+      if($entity_view_display) {
+        $is_library_enabled = $entity_view_display->getThirdPartySetting('layout_library', 'enable');
+      }
+    }
+    return $this->getSectionList() && $is_library_enabled;
   }
 
   /**
@@ -287,5 +301,4 @@ class Library extends SectionStorageBase implements ContainerFactoryPluginInterf
   protected function getSectionList() {
     return $this->getContextValue('layout');
   }
-
 }
