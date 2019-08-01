@@ -1,0 +1,32 @@
+<?php
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\block\Entity\Block;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
+/**
+ * Implement hook_block_alter().
+ */
+
+function g4plugin_block_alter(&$definitions) {
+  $definitions['user_login_block']['admin_label'] = t('GW Login');
+}
+
+function g4plugin_block_build_alter(array &$build, BlockPluginInterface $block){
+  if ($block->getBaseId() == 'g4plugin') {
+    $build['#contexts'][] = 'url';
+  }
+}
+
+function g4plugin_block_view_alter(array &$build, BlockPluginInterface $block) {
+  // remove the contextual links (edit the block) on all blocks that provide them in this module only.
+  if (isset($build['#contextual_links'])) {
+    // unset($build['#contextual_links']);
+  }
+}
+
+function g4plugin_block_access(Block $block, $operation, AccountInterface $accout) {
+  // show the Copyright block in footer onlh.
+  if($operation == 'view' && $block->getPluginId() == 'copyright') {
+    return AccessResult::forbiddenIf($block->getRegion() != 'footer');
+  }
+}

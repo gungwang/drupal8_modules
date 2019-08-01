@@ -1,0 +1,19 @@
+gungone.onepage:
+  path: '/demo/onepage'
+  defaults:
+    _controller: '\Drupal\gungone\Controller\OnepageController::getOnePage'
+    _title: 'My first custom page'
+  requirements:
+    _permission: 'view gungone pages'
+
+gungone.getcats:
+  path: '/demo/cats/{name}'
+  defaults:
+    _controller: '\Drupal\gungone\Controller\OnepageController::getCats'
+    _title: 'My cats'
+  requirements:
+    _permission: 'access content'
+    name: '[a-zA-Z]+'
+
+route_callbacks:
+  - '\Drupal\gungone\Routing\GungoneRoutes::routes'

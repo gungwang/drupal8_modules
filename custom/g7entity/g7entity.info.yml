@@ -1,0 +1,6 @@
+name: Gung 7 EntityType
+type: module
+core: 8.x
+package: Gung Demo
+version: 8.x-1.0.0
+description: Gung test content entity type

@@ -1,0 +1,6 @@
+name: Gung 6 Config Entity Custom
+type: module
+core: 8.x
+pacage: Gung Demo
+version: 8.x-1.0
+description: Custom Configuration Entity by Gung

@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependences: { }
+id: contactus
+label: 'Contact Us'
+recipients:
+  - wghappytin@hotmail.com
+reply: ''
+weight: 0

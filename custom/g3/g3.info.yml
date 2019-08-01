@@ -1,0 +1,5 @@
+name: Gung Module Three
+description: My custom module to alter form
+type: module
+core: 8.x
+package: Gung Demo

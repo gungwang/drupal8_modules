@@ -1,0 +1,21 @@
+<?php
+/**
+ * update "Contact Us" form to have a reply message
+ */
+function gungone_update_8003() {
+  $contact_form = \Drupal\contact\Entity\ContactForm::load('contactus');
+  $contact_form->setReply(t('Thank you for contacting us, we will reply shortly'));
+  $contact_form->setMessage(t('some messages to be updated by gungone.install'));
+  $contact_form->save();
+}
+
+/**
+ * Implements hook_install().
+ */
+ function gungone_install() {
+   // Set the site name
+   \Drupal::configFactory()
+   ->getEditable('system.site')
+   ->set('name', 'Gung D8 Cookbook')
+   ->save();
+ }

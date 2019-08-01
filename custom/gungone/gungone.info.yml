@@ -1,0 +1,7 @@
+name: Gung One
+type: module
+core: 8.x
+description: This is an demo module of homework Drupal 8 Cookbook
+version: 8.0.1
+package: Gung Demo
+

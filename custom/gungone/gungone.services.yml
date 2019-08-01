@@ -1,0 +1,10 @@
+services:
+  gungone.route_subscribe:
+    class: Drupal\gungone\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  gungone.request_subscriber:
+    class: Drupal\gungone\EventSubscriber\RequestSubscriber
+    arguments: ['@current_route_match', '@current_user']
+    tags:
+      - { name: event_subscriber }

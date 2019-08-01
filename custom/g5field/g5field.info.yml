@@ -1,0 +1,6 @@
+name: Gung Module Field 5
+type: module
+core: 8.x
+description: Gung module to test plugin field type, field widgets, etc.
+package: Gung Demo
+version: 1.0

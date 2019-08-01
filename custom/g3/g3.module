@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Custom module that alters forms
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+// use Drupal\Core\Config\ConfigFactoryInterface;
+
+function g3_form_system_site_information_settings_alter(&$form, FormStateInterface $form_state)
+{
+    $form['site_phone'] = [
+    '#type' => 'tel',
+    '#title' => t('Site Phone'),
+    '#default_value' => Drupal::config('system.site')->get('phone'),
+  ];
+    /*
+    // Not working
+    $validators = $form_state->getValidateHandlers();
+    $validators[] = 'g3_form_validate';
+    // $form_state->setValidateHandlers($validators);
+    */
+    // It is working
+    $form['#validate'][] = 'g3_form_validate';
+    // dpm($validators);
+    $form['#submit'][] = 'g3_system_site_information_phone_submit';
+}
+
+function g3_system_site_information_phone_submit(array &$form, FormStateInterface $form_state)
+{
+    $config = Drupal::configFactory()->getEditable('system.site');
+    $config
+  ->set('phone', $form_state->getValue('site_phone'))
+  ->save();
+}
+
+function g3_form_validate(&$form, FormStateInterface $form_state)
+{
+    // dpm($form); exit;
+    if (!$form_state->isValueEmpty('site_phone')) {
+        if (strlen($form_state->getValue('site_phone')) !=10) {
+            $form_state->setErrorByName('site_phone', t('Phone number must be 10 numbers!'));
+        }
+    }
+}
+
+function testAuto()
+{
+    $a = strstr('abc', 'a');
+    $array2 = ['a', 'b'];
+    array_diff(['a', 'b', 'c'], $array2);
+}

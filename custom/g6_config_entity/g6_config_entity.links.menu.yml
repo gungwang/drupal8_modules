@@ -1,0 +1,5 @@
+g6_config_entity.site_announcements:
+  title: 'Site announcement'
+  parent: system.admin_config_system
+  description: 'Manage site announcement'
+  route_name: entity.announcement.colletion

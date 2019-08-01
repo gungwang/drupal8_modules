@@ -1,0 +1,5 @@
+announcement.add:
+  route_name: enity.announcement.add_form
+  title: 'Add announcement'
+  appears_on:
+    - entity.announcement.colletion
