@@ -2,4 +2,4 @@ name: Hello World
 description: Hello World module
 type: module
 core: 8.x
-package: Gung Demo
+package: Custom

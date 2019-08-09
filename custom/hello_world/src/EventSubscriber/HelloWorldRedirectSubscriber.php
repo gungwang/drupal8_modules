@@ -52,7 +52,6 @@ class HelloWorldRedirectSubscriber implements EventSubscriberInterface {
    */
   public function onRequest(GetResponseEvent $event) {
     $route_name = $this->currentRouteMatch->getRouteName();
-    // kint($this->currentRouteMatch);
 
     if ($route_name !== 'hello_world.hello') {
       return;
