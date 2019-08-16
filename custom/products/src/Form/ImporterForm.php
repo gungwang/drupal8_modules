@@ -4,6 +4,7 @@ namespace Drupal\products\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\webprofiler\Entity\EntityManagerWrapper;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\products\Entity\Importer;
@@ -25,6 +26,9 @@ class ImporterForm extends EntityForm {
    *
    * @param \Drupal\products\Plugin\ImporterManager $importerManager
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   * 
+   * TypeError: Argument 2 passed to Drupal\products\Form\ImporterForm::__construct() must be an instance of Drupal\Core\Entity\EntityTypeManager, instance of Drupal\webprofiler\Entity\EntityManagerWrapper given, called in /var/www/www.gungwang.com/html/modules/custom/products/src/Form/ImporterForm.php on line 40 in Drupal\products\Form\ImporterForm->__construct() (line 29 of /var/www/www.gungwang.com/html/modules/custom/products/src/Form/ImporterForm.php) 
+   * 
    */
   public function __construct(ImporterManager $importerManager, EntityTypeManager $entityTypeManager) {
     $this->importerManager = $importerManager;

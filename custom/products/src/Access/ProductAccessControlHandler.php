@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\webprofiler\Entity\EntityManagerWrapper; // I added this as the error of construct
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\products\Entity\ProductInterface;
@@ -27,6 +28,9 @@ class ProductAccessControlHandler extends EntityAccessControlHandler implements 
    *
    * @param EntityTypeInterface $entity_type
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   * I changed to EntityManagerWrapper as the error below
+   * @param \Drupal\Core\Entity\EntityManagerWrapper $entityTypeManager
+   * TypeError: Argument 2 passed to Drupal\products\Access\ProductAccessControlHandler::__construct() must be an instance of Drupal\Core\Entity\EntityTypeManager, instance of Drupal\webprofiler\Entity\EntityManagerWrapper given, called in /var/www/www.gungwang.com/html/modules/custom/products/src/Access/ProductAccessControlHandler.php on line 44 in Drupal\products\Access\ProductAccessControlHandler->__construct() 
    */
   public function __construct(EntityTypeInterface $entity_type, EntityTypeManager $entityTypeManager) {
     parent::__construct($entity_type);
@@ -37,6 +41,7 @@ class ProductAccessControlHandler extends EntityAccessControlHandler implements 
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+
     return new static(
       $entity_type,
       // Injecting this service just for demonstration purposes. It is not used

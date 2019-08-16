@@ -3,6 +3,7 @@
 namespace Drupal\products\Plugin;
 
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\webprofiler\Entity\EntityManagerWrapper;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -31,6 +32,9 @@ class ImporterManager extends DefaultPluginManager {
    *   The module handler to invoke the alter hook with.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    */
+  /* 
+  TypeError: Argument 4 passed to Drupal\products\Plugin\ImporterManager::__construct() must be an instance of Drupal\Core\Entity\EntityTypeManager, instance of Drupal\webprofiler\Entity\EntityManagerWrapper given, called in /var/www/www.gungwang.com/html/core/lib/Drupal/Component/DependencyInjection/Container.php on line 281 in Drupal\products\Plugin\ImporterManager->__construct() 
+  */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, EntityTypeManager $entityTypeManager) {
     parent::__construct('Plugin/Importer', $namespaces, $module_handler, 'Drupal\products\Plugin\ImporterInterface', 'Drupal\products\Annotation\Importer');
 
